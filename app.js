@@ -1,4 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import {
   getDatabase,
   ref,
@@ -8,11 +8,11 @@ import {
   onValue,
   off,
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+import { firebaseConfig } from "./firebase-config.js";
 
-/** @type {import("https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js").Database | undefined} */
-let db;
-/** @type {import("https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js").DatabaseReference | undefined} */
-let todosRef;
+const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+const db = getDatabase(firebaseApp);
+const todosRef = ref(db, "todos");
 
 const form = document.getElementById("add-form");
 const input = document.getElementById("todo-input");
@@ -695,8 +695,6 @@ function normalizeTodo(id, value) {
 }
 
 function startListening() {
-  if (!todosRef) return;
-
   off(todosRef);
   isLoading = true;
   hasError = false;
@@ -732,41 +730,7 @@ function startListening() {
   );
 }
 
-function showConfigError() {
-  isLoading = false;
-  hasError = true;
-  if (errorMessage) {
-    errorMessage.textContent =
-      "firebase-config.js 파일이 없습니다. firebase-config.example.js를 복사해 firebase-config.js로 만들고, Firebase 설정값을 넣은 뒤 페이지를 새로고침하세요. 이 파일은 GitHub에 올리지 마세요.";
-  }
-  if (statusEl) statusEl.hidden = true;
-  if (list) list.hidden = true;
-  if (doneSection) doneSection.hidden = true;
-  if (emptyState) emptyState.hidden = true;
-  if (errorPanel) errorPanel.hidden = false;
-  if (clearDoneBtn) clearDoneBtn.hidden = true;
-  if (addBtn) addBtn.disabled = true;
-  if (input) input.disabled = true;
-  refreshIcons();
-}
-
-async function boot() {
-  renderDateLine();
-  syncFilterButtons();
-  refreshIcons();
-
-  try {
-    const { firebaseConfig } = await import("./firebase-config.js");
-    const firebaseApp = initializeApp(firebaseConfig);
-    db = getDatabase(firebaseApp);
-    todosRef = ref(db, "todos");
-  } catch (error) {
-    console.error("firebase-config.js 로드 실패:", error);
-    showConfigError();
-    return;
-  }
-
-  startListening();
-}
-
-boot();
+renderDateLine();
+syncFilterButtons();
+refreshIcons();
+startListening();
