@@ -1,1 +1,2 @@
-firebase-config.js
+# 선택적으로 로컬 전용 파일을 무시하려면 아래에 추가하세요.
+# firebase-config.js 는 배포/채점을 위해 저장소에 포함합니다.
